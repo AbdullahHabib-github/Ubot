@@ -1,161 +1,158 @@
+<!-- index.html -->
+
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <title>Chatbot Playground</title>
-    <link
-      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet" />
     <style>
-      .chat-body {
-        width: 550px;
-        margin: 50px auto;
-      }
-      .card-body {
-        background-color: #333;
-        color: #fff;
-        border-radius: 10px;
-      }
-      .server-message {
-        background-color: #444;
-        padding: 10px;
-        margin: 10px;
-        border-radius: 10px;
-      }
-      .client-message {
-        background-color: #555;
-        padding: 10px;
-        margin: 10px;
-        border-radius: 10px;
-      }
-      .form-inline {
-        display: flex;
-        justify-content: space-between;
-      }
-      .form-control {
-        width: 80%;
-        background-color: #333;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        padding: 10px;
-        margin-right: 10px;
-      }
-      #send {
-        background-color: #4c4cff;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        padding: 10px 20px;
-      }
-      .form-message {
-        margin-top: 10px;
-      }
+        .chat-body {
+            width: 550px;
+            margin: 50px auto;
+        }
+        .card-body {
+            background-color: #333;
+            color: #fff;
+            border-radius: 10px;
+        }
+        .server-message {
+            background-color: #444;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 10px;
+        }
+        .client-message {
+            background-color: #555;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 10px;
+        }
+        .form-inline {
+            display: flex;
+            justify-content: space-between;
+        }
+        .form-control {
+            width: 80%;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            margin-right: 10px;
+        }
+        #send {
+            background-color: #4c4cff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+        }
+        .form-message {
+            margin-top: 10px;
+        }
+        /* Additional styling for the chat box */
+        #chat-box {
+            width: 100%;
+            max-width: 550px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            background-color: #f2f2f2;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        /* Style for each message in the chat box */
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .message.user {
+            background-color: #4c4cff;
+            color: #fff;
+            text-align: right;
+        }
+        .message.bot {
+            background-color: #4caf50;
+            color: #fff;
+            text-align: left;
+        }
+        /* Styling for the user ID input box */
+        #user-id-box {
+            width: 100%;
+            max-width: 550px;
+            margin: 0 auto 10px;
+            padding: 10px;
+            background-color: #f2f2f2;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
     </style>
-    <script>
-      var endpoint = "ws://localhost:8000/ws";
-      var ws = new WebSocket(endpoint);
-      // Receive message from server word by word. Display the words as they are received.
-      ws.onmessage = function (event) {
-        var messages = document.getElementById("messages");
-        var data = JSON.parse(event.data);
-        if (data.sender === "bot") {
-          if (data.message_type === "start") {
-            var header = document.getElementById("header");
-            header.innerHTML = "Computing answer...";
-            var div = document.createElement("div");
-            div.className = "server-message";
-            var p = document.createElement("p");
-            p.innerHTML = "<strong>" + "Chatbot: " + "</strong>";
-            div.appendChild(p);
-            messages.appendChild(div);
-          } else if (data.message_type === "stream") {
-            var header = document.getElementById("header");
-            header.innerHTML = "Chatbot is typing...";
-            var p = messages.lastChild.lastChild;
-            if (data.message === "\n") {
-              p.innerHTML += "<br>";
-            } else {
-              p.innerHTML += data.message;
-            }
-          } else if (data.message_type === "info") {
-            var header = document.getElementById("header");
-            header.innerHTML = data.message;
-          } else if (data.message_type === "end") {
-            var header = document.getElementById("header");
-            header.innerHTML = "Ask a question";
-            var button = document.getElementById("send");
-            button.innerHTML = "Send";
-            button.disabled = false;
-          } else if (data.message_type === "error") {
-            var header = document.getElementById("header");
-            header.innerHTML = "Ask a question";
-            var button = document.getElementById("send");
-            button.innerHTML = "Send";
-            button.disabled = false;
-            var p = messages.lastChild.lastChild;
-            p.innerHTML += data.message;
-          }
-        } else {
-          var div = document.createElement("div");
-          div.className = "client-message";
-          var p = document.createElement("p");
-          p.innerHTML = "<strong>" + "You: " + "</strong>";
-          p.innerHTML += data.message;
-          div.appendChild(p);
-          messages.appendChild(div);
-        }
-        // Scroll to the bottom of the chat
-        messages.scrollTop = messages.scrollHeight;
-      };
-      // Send message to server
-      function sendMessage(event) {
-        event.preventDefault();
-        var message = document.getElementById("messageText").value;
-        if (message === "") {
-          return;
-        }
-        ws.send(message);
-        document.getElementById("messageText").value = "";
-
-        // Turn the button into a loading button
-        var button = document.getElementById("send");
-        button.innerHTML = "Loading...";
-        button.disabled = true;
-      }
-    </script>
-  </head>
-  <body class="bg-black">
-    <div class="chat-body card">
-      <div class="card-body p-5">
-        <h3 class="card-title text-center text-xl font-medium">
-          Chatbot Playground
-        </h3>
-        <h4 class="card-text text-center text-sm" id="header">
-          Ask a question
-        </h4>
-        <hr class="border-gray-500 mb-5" style="margin-top: 20px" />
-        <div
-          id="messages"
-          class="overflow-auto"
-          style="max-height: 500px"
-        ></div>
-        <form
-          action=""
-          class="form-inline mt-5"
-          id="chat-form"
-          onsubmit="sendMessage(event)"
-        >
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Write your question"
-            id="messageText"
-          />
-          <button id="send" type="submit" class="btn btn-primary">Send</button>
-        </form>
-      </div>
+</head>
+<body>
+<div class="chat-body">
+    <!-- User ID input box -->
+    <div id="user-id-box">
+        <label for="user-id">User ID:</label>
+        <input type="text" id="user-id" class="form-control" placeholder="Enter your user ID" />
     </div>
-  </body>
+
+    <div id="chat-box">
+        <!-- Chat messages will be displayed here -->
+        <div class="message bot">Bot: Hi there! How can I help you?</div>
+    </div>
+    <div class="form-inline">
+        <input type="text" id="input-box" class="form-control" placeholder="Type your message here" />
+        <button id="send" onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    // Function to send a message and get a response
+    function sendMessage() {
+        var inputBox = document.getElementById("input-box");
+        var message = inputBox.value.trim();
+
+        if (message !== "") {
+            addMessage("You", message, "user"); // Add the user's message to the chat box
+            inputBox.value = ""; // Clear the input box
+
+            // Get the user ID from the input box
+            var userIdInput = document.getElementById("user-id");
+            var userId = userIdInput.value.trim();
+
+            // Send the message to the FastAPI backend
+            fetch("/Chat_me", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    Userid: userId,
+                    query: message
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    var botResponse = data.response;
+                    addMessage("Bot", botResponse, "bot"); // Add the bot's response to the chat box
+                })
+                .catch(error => {
+                    console.error("Error sending the message:", error);
+                });
+        }
+    }
+
+    // Function to add a new message to the chat box
+    function addMessage(sender, message, type) {
+        var chatBox = document.getElementById("chat-box");
+        var newMessage = document.createElement("div");
+        newMessage.textContent = sender + ": " + message;
+        newMessage.classList.add("message", type);
+        chatBox.appendChild(newMessage);
+    }
+</script>
+</body>
 </html>
