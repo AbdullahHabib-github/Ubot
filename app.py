@@ -7,6 +7,7 @@ from collections import defaultdict
 from dotenv import load_dotenv
 from langchain.chains import ConversationalRetrievalChain
 from langchain import HuggingFaceHub
+from Model import MODEL_ID
 import os
 
 load_dotenv()
@@ -14,9 +15,15 @@ load_dotenv()
 app = FastAPI(title="ConversationalRetrievalChainDemo")
 templates = Jinja2Templates(directory="templates")
 
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = "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"
 
-llm = HuggingFaceHub(repo_id="google/flan-t5-small", model_kwargs={"temperature": 0, "max_length": 512})
+
+with open("hugging_face_token.txt", 'r') as file:
+    for line in file:
+        TOKEN= (line)
+os.environ["HUGGINGFACEHUB_API_TOKEN"] = TOKEN
+
+
+llm = HuggingFaceHub(repo_id=MODEL_ID, model_kwargs={"temperature": 0, "max_length": 512})
 
 
 def create_chain():
@@ -60,7 +67,7 @@ async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-if __name__ == "__main__":
-    import uvicorn
+# if __name__ == "__main__":
+#     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+#     uvicorn.run(app, host="0.0.0.0", port=8000)

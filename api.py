@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from langchain.chains import ConversationalRetrievalChain
 from pydantic import BaseModel
 from collections import defaultdict
-
+from Model import MODEL_ID
 
 load_dotenv()
 
@@ -13,13 +13,19 @@ app = FastAPI(title="ConversationalRetrievalChainDemo")
 
 templates = Jinja2Templates(directory="templates")
 
-load_dotenv()
-
 from langchain import HuggingFaceHub
-import os
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = "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"
 
-llm=HuggingFaceHub(repo_id="google/flan-t5-small", model_kwargs={"temperature":0, "max_length":512})
+
+import os
+with open("hugging_face_token.txt", 'r') as file:
+    for line in file:
+        TOKEN= (line)
+os.environ["HUGGINGFACEHUB_API_TOKEN"] = TOKEN
+
+
+
+
+llm=HuggingFaceHub(repo_id=MODEL_ID, model_kwargs={"temperature":0, "max_length":512})
 
 
 def create_chain():
@@ -59,14 +65,3 @@ def chat_me(request: ChatRequest):
     file1.write(query + " " + result['answer']+"\n")
     file1.close()
     return {"response": 'Answer: ' + result['answer']}
-
-
-# langchain_router = LangchainRouter(
-#     langchain_url="/chat", langchain_object=chain, streaming_mode=1
-# )
-# langchain_router.add_langchain_api_route(
-#     "/chat_json", langchain_object=chain, streaming_mode=2
-# )
-
-# app.include_router(langchain_router)
-
