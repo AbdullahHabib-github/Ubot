@@ -15,7 +15,7 @@ from langchain.vectorstores import Chroma
 
 load_dotenv()
 
-app = FastAPI(title="ConversationalRetrievalChainDemo")
+app = FastAPI(title="RetrievalChainDemo")
 templates = Jinja2Templates(directory="templates")
 
 
@@ -95,11 +95,11 @@ def chat_me(request: ChatRequest):
     Userid = request.Userid
     query = request.query
     result = chain({'query': query, 'chat_history': chat_history[Userid]})
-    chat_history[Userid].append((query, result))
+    chat_history[Userid].append((query, result['result']))
     file1 = open("{0}.txt".format(Userid), "a")  # append mode
-    file1.write(query + " " + result + "\n")
+    file1.write(query + " " + result['result'] + "\n")
     file1.close()
-    return {"response": result}
+    return {"response": result['result']}
 
 
 @app.get("/")
@@ -107,7 +107,7 @@ async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-chat_history = defaultdict(list)
+# chat_history = defaultdict(list)
 
 # while True:
 
