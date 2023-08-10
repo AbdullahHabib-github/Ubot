@@ -3,3 +3,5 @@ fastapi
 langchain
 pydantic
 chroma_db
+llamaapi
+langchain_experimental
