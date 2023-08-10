@@ -11,25 +11,41 @@ from fetch_llm import hf_model
 load_dotenv()
 
 app = FastAPI(title="ConversationalRetrievalChainDemo")
-# templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")
 
 
-from fastapi.middleware.cors import CORSMiddleware
-
-origins = [
-    "http://localhost:5173",  # Update this to your frontend URL
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
+# ################uncomment the following code if you are using a seperate frontend code#########
+# Configure CORS settings
+
+# from fastapi.middleware.cors import CORSMiddleware
+
+# origins = [
+#     "http://localhost:5173",  # Update this to your frontend URL
+# ]
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
+
+
+
+
+##if using hugging face
 llm = hf_model()
+
+
+
+# if using replicate
+# llm = replicate_llm()
+
+
 
 def create_chain():
     from langchain.embeddings import HuggingFaceEmbeddings
@@ -67,6 +83,6 @@ def chat_me(request: ChatRequest):
     return {"response": 'Answer: ' + result['answer']}
 
 
-# @app.get("/")
-# async def index(request: Request):
-#     return templates.TemplateResponse("index.html", {"request": request})
+@app.get("/")
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})

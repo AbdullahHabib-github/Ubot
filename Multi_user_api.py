@@ -1,10 +1,11 @@
 
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
+from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
 from  langchain.schema import Document
 from langchain.chains import RetrievalQA
-from fetch_llm import replicate_llm
+from fetch_llm import replicate_llm, hf_model
 from langchain import PromptTemplate
 import os
 from langchain.vectorstores import Chroma
@@ -33,44 +34,38 @@ def list_folders(directory):
 load_dotenv()
 
 app = FastAPI(title="GIKI chatbot")
-# templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")
 
 
+
+
+# ################uncomment the following code if you are using a seperate frontend code#########
 # Configure CORS settings
 
-from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.middleware.cors import CORSMiddleware
 
-origins = [
-    "http://localhost:5173",  # Update this to your frontend URL
-]
+# origins = [
+#     "http://localhost:5173",  # Update this to your frontend URL
+# ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 
 ##if using hugging face
-# llm = hf_model()
+llm = hf_model()
 
 
 
 # if using replicate
-llm = replicate_llm()
+# llm = replicate_llm()
 
 
-with open("hugging_face_token.txt", 'r') as file:
-    for line in file:
-        HTOKEN= (line)
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = HTOKEN
-
-# from langchain.embeddings import HuggingFaceHubEmbeddings
-# embeddings = HuggingFaceHubEmbeddings(
-#     repo_id="deerslab/llama-7b-embeddings"
-# )
 
 
 from langchain.embeddings import HuggingFaceEmbeddings
@@ -80,14 +75,7 @@ from langchain.embeddings import HuggingFaceInstructEmbeddings
 
 # embeddings = LlamaCppEmbeddings()
 
-# embeddings = HuggingFaceEmbeddings(model_name="shaloma/llama-7b-embeddings", model_kwargs={"device":"cude"})
 
-
-# hf = HuggingFaceHubEmbeddings(
-#     repo_id=repo_id,
-#     task="feature-extraction",
-#     huggingfacehub_api_token="my-api-key",
-# )
 
 embeddings = HuggingFaceEmbeddings()
 template = """As a GIKI website chat bot, your goal is to provide accurate and helpful information about GIKI,
@@ -185,14 +173,12 @@ def chat_me(request: ChatRequest):
 
     return {"response": result}
 
-    # except:
-    #     return {"response": "Error"}
 
 
 
-# @app.get("/")
-# async def index(request: Request):
-#     return templates.TemplateResponse("index.html", {"request": request})
+@app.get("/")
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 
